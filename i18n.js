@@ -1,4 +1,8 @@
 export const translations = {
+  'Downloading Python…': 'Laster ned Python…',
+  'Preparing the terminal…': 'Klargjør terminalen…',
+  'Preparing Python. Run code becomes available when loading finishes.': 'Klargjør Python. Kjør kode blir tilgjengelig når innlastingen er ferdig.',
+  'Python is still loading. The first visit can take up to 90 seconds. Keep this tab open.': 'Python lastes fortsatt. Første besøk kan ta opptil 90 sekunder. Hold denne fanen åpen.',
   'Could not prepare Python in this browser. Open the site directly over HTTPS, allow service workers, and try again.': 'Kunne ikke klargjøre Python i denne nettleseren. Åpne nettstedet direkte med HTTPS, tillat service workers og prøv igjen.',
   'PythOnline · Your Python workspace': 'PythOnline · Ditt Python-verksted',
   'CLASSROOM': 'KLASSEROM',

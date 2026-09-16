@@ -8,6 +8,7 @@ let worker;
 let shared;
 let state = 'loading';
 let timer;
+let slowLoadTimer;
 let statusKey = 'Loading Python…';
 let hintKey = 'Getting your workspace ready. The first load can take a moment.';
 let hintValues = {};
@@ -39,12 +40,14 @@ function setState(next, label) {
   statusKey = label;
   $('status').textContent = t(label);
   $('run').disabled = next !== 'ready';
+  $('run').textContent = t(next === 'loading' ? 'Loading Python…' : '▶ Run code');
   $('stop').disabled = !['running', 'input'].includes(next);
   $('retry').hidden = next !== 'error';
   $('input-form').hidden = next !== 'input';
 }
 function fail(message) {
   clearTimeout(timer);
+  clearTimeout(slowLoadTimer);
   worker?.terminate();
   setState('error', 'Could not start Python');
   append(`\n${t(message)}\n`);
@@ -53,7 +56,12 @@ function fail(message) {
 async function startWorker() {
   worker?.terminate();
   clearTimeout(timer);
+  clearTimeout(slowLoadTimer);
   setState('loading', 'Loading Python…');
+  setHint('Preparing Python. Run code becomes available when loading finishes.');
+  slowLoadTimer = setTimeout(() => {
+    if (state === 'loading') setHint('Python is still loading. The first visit can take up to 90 seconds. Keep this tab open.');
+  }, 15000);
   try {
     if (!await preparePython()) return;
   } catch {
@@ -67,8 +75,12 @@ async function startWorker() {
   worker.onmessage = ({ data }) => {
     if (data.type === 'ready') {
       clearTimeout(timer);
+      clearTimeout(slowLoadTimer);
       setState('ready', 'Ready');
       setHint('All set. Run your code whenever you’re ready.');
+    } else if (data.type === 'progress') {
+      statusKey = data.message;
+      $('status').textContent = t(statusKey);
     } else if (data.type === 'output') append(data.text);
     else if (data.type === 'input') {
       setState('input', 'Waiting for your answer');
@@ -158,7 +170,7 @@ $('language').addEventListener('change', (event) => {
   const wasExample = Object.values(examples).includes(editor.value);
   setLanguage(event.target.value);
   if (wasExample && !['running', 'input'].includes(state)) editor.value = examples[language];
-  $('status').textContent = t(statusKey);
+  setState(state, statusKey);
   setHint(hintKey, hintValues);
   updateEditor();
 });

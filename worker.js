@@ -26,8 +26,10 @@ self.onmessage = async ({ data }) => {
     try {
       control = new Int32Array(data.shared, 0, 2);
       bytes = new Uint8Array(data.shared, 8);
+      postMessage({ type: 'progress', message: 'Downloading Python…' });
       importScripts(`${PYODIDE_URL}pyodide.js`);
       python = await loadPyodide({ indexURL: PYODIDE_URL });
+      postMessage({ type: 'progress', message: 'Preparing the terminal…' });
       python.setStdout({ write, isatty: true });
       python.setStderr({ write, isatty: true });
       python.setStdin({
