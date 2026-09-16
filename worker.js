@@ -5,6 +5,7 @@ let control;
 let bytes;
 let pending = '';
 let emitted = 0;
+let outputLimitMessage = '';
 const LIMIT = 100000;
 function flush() {
   if (pending) { postMessage({ type: 'output', text: pending }); pending = ''; }
@@ -13,7 +14,7 @@ function write(buffer) {
   if (emitted < LIMIT) {
     pending += decoder.decode(buffer, { stream: true });
     emitted += buffer.length;
-    if (emitted >= LIMIT) pending += '\n[Output limit reached. Use Stop if your program keeps running.]\n';
+    if (emitted >= LIMIT) pending += outputLimitMessage;
     if (pending.length >= 1024) flush();
   }
   return buffer.length;
@@ -46,6 +47,7 @@ self.onmessage = async ({ data }) => {
   }
   if (data.type !== 'run' || !python) return;
   emitted = 0;
+  outputLimitMessage = data.outputLimitMessage;
   pending = '';
   let globals;
   let ok = true;

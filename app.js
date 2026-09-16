@@ -1,11 +1,21 @@
+import { t, language, setLanguage, examples } from './i18n.js';
+import { preparePython } from './isolation.js';
 const $ = (id) => document.getElementById(id);
-const example = `# Your first conversation with Python\n# Press Run code, then answer in the terminal.\n\nname = input("What's your name? ")\nprint(f"Hello, {name}! 👋")\n\nprint("Let's make something together.")\nfor number in range(1, 4):\n    print(f"  {number}. Write, run, explore!")\n`;
+const example = examples[language];
 const editor = $('editor');
 let filename = 'hello.py';
 let worker;
 let shared;
 let state = 'loading';
 let timer;
+let statusKey = 'Loading Python…';
+let hintKey = 'Getting your workspace ready. The first load can take a moment.';
+let hintValues = {};
+function setHint(key, values = {}) {
+  hintKey = key;
+  hintValues = values;
+  $('hint').textContent = t(key, values);
+}
 try {
   const saved = JSON.parse(localStorage.getItem('pythonline-draft'));
   editor.value = saved?.code ?? example;
@@ -15,10 +25,10 @@ try {
 function updateEditor() {
   const count = editor.value.split('\n').length;
   $('line-numbers').textContent = Array.from({ length: count }, (_, i) => i + 1).join('\n');
-  $('line-count').textContent = `${count} ${count === 1 ? 'line' : 'lines'}`;
+  $('line-count').textContent = `${count} ${t(count === 1 ? 'line' : 'lines')}`;
   $('filename').textContent = filename;
   try { localStorage.setItem('pythonline-draft', JSON.stringify({ code: editor.value, filename })); }
-  catch { $('hint').textContent = 'Browser storage is unavailable. Use Save to keep your code.'; }
+  catch { setHint('Browser storage is unavailable. Use Save to keep your code.'); }
 }
 function append(text) {
   $('output').textContent = ($('output').textContent + text).slice(-100000);
@@ -26,7 +36,8 @@ function append(text) {
 }
 function setState(next, label) {
   state = next;
-  $('status').textContent = label;
+  statusKey = label;
+  $('status').textContent = t(label);
   $('run').disabled = next !== 'ready';
   $('stop').disabled = !['running', 'input'].includes(next);
   $('retry').hidden = next !== 'error';
@@ -36,14 +47,17 @@ function fail(message) {
   clearTimeout(timer);
   worker?.terminate();
   setState('error', 'Could not start Python');
-  append(`\n${message}\n`);
-  $('hint').textContent = 'Check your connection and try loading Python again.';
+  append(`\n${t(message)}\n`);
+  setHint('Check your connection and try loading Python again.');
 }
-function startWorker() {
+async function startWorker() {
   worker?.terminate();
+  clearTimeout(timer);
   setState('loading', 'Loading Python…');
-  if (!crossOriginIsolated || typeof SharedArrayBuffer === 'undefined') {
-    fail('This page needs a secure connection and isolation headers. Start it with npm start on localhost, or use the hosting instructions in README.md.');
+  try {
+    if (!await preparePython()) return;
+  } catch {
+    fail('Could not prepare Python in this browser. Open the site directly over HTTPS, allow service workers, and try again.');
     return;
   }
   shared = new SharedArrayBuffer(65544);
@@ -54,7 +68,7 @@ function startWorker() {
     if (data.type === 'ready') {
       clearTimeout(timer);
       setState('ready', 'Ready');
-      $('hint').textContent = 'All set. Run your code whenever you’re ready.';
+      setHint('All set. Run your code whenever you’re ready.');
     } else if (data.type === 'output') append(data.text);
     else if (data.type === 'input') {
       setState('input', 'Waiting for your answer');
@@ -63,7 +77,7 @@ function startWorker() {
       $('terminal-body').scrollTop = $('terminal-body').scrollHeight;
     } else if (data.type === 'done') {
       setState('ready', data.ok ? 'Finished' : 'Check your code');
-      append(data.ok ? '\n✓ Program finished.\n' : '\nFix the error above and try again.\n');
+      append(t(data.ok ? '\n✓ Program finished.\n' : '\nFix the error above and try again.\n'));
     } else if (data.type === 'error') fail(data.text);
   };
   worker.postMessage({ type: 'init', shared });
@@ -72,11 +86,11 @@ function run() {
   if (state !== 'ready') return;
   $('output').textContent = `› python ${filename}\n\n`;
   setState('running', 'Running…');
-  worker.postMessage({ type: 'run', code: editor.value, filename });
+  worker.postMessage({ type: 'run', code: editor.value, filename, outputLimitMessage: t('\n[Output limit reached. Use Stop if your program keeps running.]\n') });
 }
 $('run').onclick = run;
 $('stop').onclick = () => {
-  append('\n■ Program stopped. Restarting Python…\n');
+  append(t('\n■ Program stopped. Restarting Python…\n'));
   startWorker();
 };
 $('retry').onclick = startWorker;
@@ -86,7 +100,7 @@ $('input-form').onsubmit = (event) => {
   if (state !== 'input') return;
   const text = $('terminal-input').value;
   const bytes = new TextEncoder().encode(text);
-  if (bytes.length > shared.byteLength - 8) { $('hint').textContent = 'That answer is too long. Please use fewer than 65,536 bytes.'; return; }
+  if (bytes.length > shared.byteLength - 8) { setHint('That answer is too long. Please use fewer than 65,536 bytes.'); return; }
   new Uint8Array(shared, 8).set(bytes);
   const control = new Int32Array(shared, 0, 2);
   Atomics.store(control, 1, bytes.length);
@@ -110,16 +124,16 @@ document.addEventListener('keydown', (event) => {
 $('open').onclick = () => $('file-input').click();
 async function openFile(file) {
   if (!file) return;
-  if (!file.name.toLowerCase().endsWith('.py')) { $('hint').textContent = 'Choose a Python file ending in .py.'; return; }
-  if (file.size > 1000000) { $('hint').textContent = 'Please choose a .py file smaller than 1 MB.'; return; }
-  if (editor.value !== example && editor.value.trim() && !confirm('Replace the code in the editor? Save a copy first if you want to keep it.')) return;
+  if (!file.name.toLowerCase().endsWith('.py')) { setHint('Choose a Python file ending in .py.'); return; }
+  if (file.size > 1000000) { setHint('Please choose a .py file smaller than 1 MB.'); return; }
+  if (!Object.values(examples).includes(editor.value) && editor.value.trim() && !confirm(t('Replace the code in the editor? Save a copy first if you want to keep it.'))) return;
   try {
     const code = await file.text();
     editor.value = code.replace(/^\uFEFF/, '');
     filename = file.name;
     updateEditor();
-    $('hint').textContent = `Opened ${filename}. Ready to explore.`;
-  } catch { $('hint').textContent = 'Could not read that file. Please try again.'; }
+    setHint('Opened {filename}. Ready to explore.', { filename });
+  } catch { setHint('Could not read that file. Please try again.'); }
 }
 $('file-input').onchange = async (event) => { await openFile(event.target.files[0]); event.target.value = ''; };
 const dropzone = document.querySelector('.editor-wrap');
@@ -135,11 +149,20 @@ $('save').onclick = () => {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 };
 $('example').onclick = () => {
-  if (editor.value !== example && editor.value.trim() && !confirm('Replace your code with the example? Save a copy first if you want to keep it.')) return;
-  editor.value = example;
+  if (!Object.values(examples).includes(editor.value) && editor.value.trim() && !confirm(t('Replace your code with the example? Save a copy first if you want to keep it.'))) return;
+  editor.value = examples[language];
   filename = 'hello.py';
   updateEditor();
 };
+$('language').addEventListener('change', (event) => {
+  const wasExample = Object.values(examples).includes(editor.value);
+  setLanguage(event.target.value);
+  if (wasExample && !['running', 'input'].includes(state)) editor.value = examples[language];
+  $('status').textContent = t(statusKey);
+  setHint(hintKey, hintValues);
+  updateEditor();
+});
+setLanguage(language);
 updateEditor();
-append('Welcome to your Python terminal.\nYour program’s output will appear here.\n');
+append(t('Welcome to your Python terminal.\nYour program’s output will appear here.\n'));
 startWorker();

@@ -4,6 +4,8 @@ A small classroom Python workspace. Students can edit code, open or drop a UTF-8
 
 ## Preview on your computer
 
+The interface defaults to Norwegian Bokmål. Use the language selector in the header to switch to English; the browser remembers the choice. Labels, help, status messages, and the starter example are translated. Switching languages preserves student code and terminal history. Python's own error messages and program output remain in their original language.
+
 Install Node.js 22 or newer, then run:
 
 ```sh
@@ -14,14 +16,24 @@ Open http://localhost:3000. No npm dependencies or Python installation are neede
 
 ## Share with students
 
-Host `index.html`, `style.css`, `app.js`, and `worker.js` on an HTTPS static host. Students only need the website URL and a modern browser. Netlify and Cloudflare Pages can use the included `_headers` file; publish this directory with no build command. On other hosts, configure these response headers for the site and worker:
+### GitHub Pages
+
+1. Push the updated project to your GitHub repository, including `isolation.js`, `isolation-sw.js`, and `.nojekyll`.
+2. In **Settings → Pages**, select **Deploy from a branch**, choose the branch containing the files and **/(root)**, and save. No build command or Node server is needed.
+3. Open the published HTTPS URL, for example `https://username.github.io/PythOnline/`.
+
+GitHub Pages does not supply the isolation headers required by interactive input. The included service worker adds them in the browser. On the first visit, the site reloads once automatically, then starts Python. Relative paths support both repository subdirectories and custom domains. The service worker does not cache the website files. Use a modern browser with service workers enabled, and open the site directly rather than embedding it in another page.
+
+### Other static hosts
+
+Host `index.html`, `style.css`, `app.js`, `i18n.js`, `worker.js`, `isolation.js`, and `isolation-sw.js` together on an HTTPS static host. Students only need the website URL and a modern browser. Netlify and Cloudflare Pages can use the included `_headers` file; publish this directory with no build command. Hosts that support custom headers can set these for the site and worker, avoiding the first-visit reload:
 
 ```text
 Cross-Origin-Opener-Policy: same-origin
 Cross-Origin-Embedder-Policy: require-corp
 ```
 
-These headers enable the shared memory used for interactive terminal input. Opening the HTML directly, plain HTTP on a school network address, or hosting without these headers will not work. The included Node server sets them for localhost development; a public Node deployment needs HTTPS through its host or reverse proxy.
+These headers enable the shared memory used for interactive terminal input. When headers are absent, the service worker provides them. Opening the HTML directly or using plain HTTP on a school network address will not work. The included Node server sets the headers for localhost development; a public Node deployment needs HTTPS through its host or reverse proxy.
 
 ## Scope
 
@@ -39,3 +51,5 @@ npm test
 ```
 
 For the end-to-end browser check, run `npm install`, `npx playwright install chromium`, then `npm run test:browser`. Playwright is only a development dependency; the website itself needs no npm packages.
+
+The browser tests run both with server headers and with a GitHub Pages simulation (no isolation headers, hosted under `/PythOnline/`). To preview the latter manually, run `node server.js --pages` and open http://localhost:3001/PythOnline/.
