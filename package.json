@@ -1,0 +1,14 @@
+{
+  "name": "pythonline",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test server.test.js",
+    "test:browser": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0"
+  }
+}

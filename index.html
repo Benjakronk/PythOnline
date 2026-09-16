@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#172b28">
+  <title>PythOnline · Your Python workspace</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./"><span class="brand-icon">&gt;_</span> PythOnline<span class="badge">CLASSROOM</span></a>
+    <span class="local-note"><span class="dot"></span> Runs in your browser</span>
+  </header>
+  <main>
+    <section class="intro">
+      <div><p class="eyebrow">A LITTLE CODE. ENDLESS POSSIBILITIES.</p><h1>Your next idea starts here.</h1><p>Write Python, open a file, and see what happens. No installation needed.</p></div>
+      <button id="example" class="button subtle">↻ Load example</button>
+    </section>
+    <div class="workspace">
+      <section class="panel editor-panel" aria-labelledby="editor-heading">
+        <div class="panel-heading"><div><span class="step">01</span><h2 id="editor-heading">Your code</h2></div><div class="actions"><button id="open" class="button small">↑ Open .py</button><button id="save" class="button small">↓ Save</button></div></div>
+        <div class="filebar"><span class="python-icon">Py</span><span id="filename">hello.py</span><span class="file-hint">Python</span></div>
+        <div class="editor-wrap"><div id="line-numbers" aria-hidden="true">1</div><textarea id="editor" aria-label="Python code" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off"></textarea></div>
+        <div class="editor-footer"><span id="line-count">1 line</span><span>UTF-8 <span class="divider">/</span> <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to run</span></div>
+      </section>
+      <section class="panel terminal-panel" aria-labelledby="terminal-heading">
+        <div class="panel-heading"><div><span class="step">02</span><h2 id="terminal-heading">Terminal</h2></div><button id="clear" class="button small terminal-clear">Clear</button></div>
+        <div class="terminal-body" id="terminal-body"><pre id="output" role="log" aria-label="Python output" aria-live="polite"></pre><form id="input-form" hidden><label for="terminal-input">›</label><input id="terminal-input" autocomplete="off" aria-label="Program input" placeholder="Type your answer and press Enter"><button type="submit">Send ↵</button></form></div>
+        <div class="terminal-footer"><span id="status" role="status">Loading Python…</span><span>Python / Pyodide</span></div>
+      </section>
+    </div>
+    <div class="runbar"><p id="hint">Getting your workspace ready. The first load can take a moment.</p><div class="actions"><button id="retry" class="button" hidden>Retry loading</button><button id="stop" class="button" disabled>■ Stop</button><button id="run" class="button primary" disabled>▶ Run code</button></div></div>
+    <section class="tips" aria-label="Quick guide"><article><span>↗</span><div><h3>Bring your own code</h3><p>Open a <code>.py</code> file or drop one into the editor.</p></div></article><article><span>⌨</span><div><h3>A conversation with your code</h3><p>When your program asks a question, answer in the terminal.</p></div></article><article><span>✓</span><div><h3>Make yourself at home</h3><p>Your code is saved in this browser. Download a copy to keep.</p></div></article></section>
+    <footer>Made for learning, one line at a time.<span>Python, minus the setup.</span></footer>
+  </main>
+  <input id="file-input" type="file" accept=".py,text/x-python" hidden>
+</body>
+</html>
