@@ -1,5 +1,5 @@
-import { t, language, setLanguage, examples } from './i18n.js';
-import { preparePython } from './isolation.js';
+import { t, language, setLanguage, examples } from './i18n.js?v=2';
+import { preparePython } from './isolation.js?v=2';
 const $ = (id) => document.getElementById(id);
 const example = examples[language];
 const editor = $('editor');
@@ -68,8 +68,13 @@ async function startWorker() {
     fail('Could not prepare Python in this browser. Open the site directly over HTTPS, allow service workers, and try again.');
     return;
   }
-  shared = new SharedArrayBuffer(65544);
-  worker = new Worker('worker.js');
+  try {
+    shared = new SharedArrayBuffer(65544);
+    worker = new Worker('worker.js?v=2');
+  } catch {
+    fail('The Python worker could not load. Check your connection or hosting configuration.');
+    return;
+  }
   timer = setTimeout(() => fail('Python took too long to load. The school network may be blocking cdn.jsdelivr.net.'), 90000);
   worker.onerror = () => fail('The Python worker could not load. Check your connection or hosting configuration.');
   worker.onmessage = ({ data }) => {

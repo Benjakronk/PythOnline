@@ -26,6 +26,8 @@ GitHub Pages does not supply the isolation headers required by interactive input
 
 ### Other static hosts
 
+Returning tabs automatically update the app's service worker. If a tab was claimed before isolation headers took effect, startup retries navigation once. The recovery preserves local drafts and language preferences. When deploying this update to an older installation, opening the Pages URL with `?v=2` once also bypasses a stale cached HTML page.
+
 Host `index.html`, `style.css`, `app.js`, `i18n.js`, `worker.js`, `isolation.js`, and `isolation-sw.js` together on an HTTPS static host. Students only need the website URL and a modern browser. Netlify and Cloudflare Pages can use the included `_headers` file; publish this directory with no build command. Hosts that support custom headers can set these for the site and worker, avoiding the first-visit reload:
 
 ```text

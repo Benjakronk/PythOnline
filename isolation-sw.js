@@ -7,7 +7,9 @@ self.addEventListener('fetch', (event) => {
   if (new URL(request.url).origin !== self.location.origin) return;
   if (request.cache === 'only-if-cached' && request.mode !== 'same-origin') return;
   event.respondWith((async () => {
-    const response = await fetch(request);
+    // Revalidate app files, so returning students don't receive an old startup
+    // module from the browser's HTTP cache after a Pages deployment.
+    const response = await fetch(new Request(request, { cache: 'no-cache' }));
     if (response.status === 0) return response;
     const headers = new Headers(response.headers);
     headers.set('Cross-Origin-Opener-Policy', 'same-origin');

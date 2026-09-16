@@ -1,12 +1,19 @@
 // All paths are relative to this module, including on /repository/ Pages sites.
 export async function preparePython() {
-  if (globalThis.crossOriginIsolated && typeof SharedArrayBuffer !== 'undefined') return true;
+  const isolated = globalThis.crossOriginIsolated && typeof SharedArrayBuffer !== 'undefined';
+  const pageURL = new URL(location.href);
+  const recoveryKey = 'python-recovery';
+  if (isolated && pageURL.searchParams.has(recoveryKey)) {
+    pageURL.searchParams.delete(recoveryKey);
+    history.replaceState(null, '', pageURL);
+  }
+  // Native headers need no service worker. Existing workers still get updated.
+  if (isolated && !navigator.serviceWorker?.controller) return true;
   if (!globalThis.isSecureContext || !('serviceWorker' in navigator)) throw new Error('unsupported');
-  const url = new URL('./isolation-sw.js', import.meta.url);
+  const url = new URL('./isolation-sw.js?v=2', import.meta.url);
   const controlsApp = () => navigator.serviceWorker.controller?.scriptURL === url.href;
-  // A controlled page that is still not isolated must show a useful error,
-  // rather than repeatedly reloading (for example in an unsupported browser).
-  if (controlsApp()) throw new Error('not-isolated');
+  // Register even when an older worker controls this tab. Changing the script
+  // URL updates this app's registration without removing drafts or other sites.
   await navigator.serviceWorker.register(url, { scope: new URL('./', import.meta.url).pathname, updateViaCache: 'none' });
   await new Promise((resolve, reject) => {
     const timeout = setTimeout(() => { cleanup(); reject(new Error('timeout')); }, 15000);
@@ -20,7 +27,12 @@ export async function preparePython() {
     navigator.serviceWorker.addEventListener('controllerchange', changed);
     changed();
   });
+  if (isolated) return true;
+  // A claimed tab may still have been loaded without isolation headers.
+  // Retry its navigation once, rather than rejecting an existing controller.
+  if (pageURL.searchParams.has(recoveryKey)) throw new Error('not-isolated');
+  pageURL.searchParams.set(recoveryKey, '1');
   // The new headers take effect on navigation. Drafts have already been saved.
-  location.reload();
+  location.replace(pageURL);
   return false;
 }
