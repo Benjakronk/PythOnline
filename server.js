@@ -11,6 +11,11 @@ const publicFiles = new Map([
   ['/worker.js', ['worker.js', 'text/javascript']],
   ['/isolation.js', ['isolation.js', 'text/javascript']],
   ['/isolation-sw.js', ['isolation-sw.js', 'text/javascript']],
+  ['/pwa.js', ['pwa.js', 'text/javascript']],
+  ['/manifest.webmanifest', ['manifest.webmanifest', 'application/manifest+json']],
+  ['/icons/icon.svg', ['icons/icon.svg', 'image/svg+xml']],
+  ['/icons/icon-192.png', ['icons/icon-192.png', 'image/png']],
+  ['/icons/icon-512.png', ['icons/icon-512.png', 'image/png']],
 ]);
 
 export function createServer({ isolation = true, basePath = '' } = {}) {

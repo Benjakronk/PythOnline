@@ -7,10 +7,9 @@ export async function preparePython() {
     pageURL.searchParams.delete(recoveryKey);
     history.replaceState(null, '', pageURL);
   }
-  // Native headers need no service worker. Existing workers still get updated.
-  if (isolated && !navigator.serviceWorker?.controller) return true;
+  // Also register on hosts with native headers, for the installed app.
   if (!globalThis.isSecureContext || !('serviceWorker' in navigator)) throw new Error('unsupported');
-  const url = new URL('./isolation-sw.js?v=2', import.meta.url);
+  const url = new URL('./isolation-sw.js?v=4', import.meta.url);
   const controlsApp = () => navigator.serviceWorker.controller?.scriptURL === url.href;
   // Register even when an older worker controls this tab. Changing the script
   // URL updates this app's registration without removing drafts or other sites.

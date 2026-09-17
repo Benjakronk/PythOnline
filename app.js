@@ -1,5 +1,6 @@
-import { t, language, setLanguage, examples } from './i18n.js?v=3';
-import { preparePython } from './isolation.js?v=2';
+import { t, language, setLanguage, examples } from './i18n.js?v=4';
+import { preparePython } from './isolation.js?v=4';
+import { setupAppControls } from './pwa.js?v=4';
 const $ = (id) => document.getElementById(id);
 const example = examples[language];
 const editor = $('editor');
@@ -24,6 +25,7 @@ function selectTab(name, focus = false) {
     $(`${tab}-panel`).hidden = !selected;
   }
   if (focus) $(`${name}-tab`).focus();
+  else if (name === 'terminal' && !$('input-form').hidden) $('terminal-input').focus();
 }
 for (const tab of ['code', 'terminal']) {
   $(`${tab}-tab`).onclick = () => selectTab(tab);
@@ -43,6 +45,10 @@ $('interpreter').onchange = () => {
   updatePrompt();
   if ($('interpreter').checked) $('terminal-input').focus();
 };
+$('terminal-body').addEventListener('click', (event) => {
+  if (event.target.closest('button, input') || window.getSelection().toString()) return;
+  if (!$('input-form').hidden) $('terminal-input').focus();
+});
 function setHint(key, values = {}) {
   hintKey = key;
   hintValues = values;
@@ -250,7 +256,9 @@ $('language').addEventListener('change', (event) => {
   setState(state, statusKey);
   setHint(hintKey, hintValues);
   updateEditor();
+  updateAppControls();
 });
 setLanguage(language);
+const updateAppControls = setupAppControls(t, setHint);
 updateEditor();
 startWorker();

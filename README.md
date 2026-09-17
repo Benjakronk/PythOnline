@@ -16,6 +16,14 @@ Open http://localhost:3000. No npm dependencies or Python installation are neede
 
 ## Share with students
 
+### Install as a desktop app
+
+Choose **Installer app / Install app**, or the browser's installation option in Edge or Chrome. The app opens in its own window with a terminal icon. If already running as an installed app, the installation button is hidden. Fullscreen can be toggled from the header or exited with Escape.
+
+This is an online PWA: installing it does not bundle Python for offline startup. Internet access to the site and cdn.jsdelivr.net is still required. Drafts remain in browser storage. Publish `manifest.webmanifest`, `pwa.js`, and the entire `icons/` directory together with the other app files. All URLs remain relative for GitHub Pages repository hosting.
+
+The icon source is `icons/icon.svg`. To regenerate its PNG variants after editing, run `node scripts/generate-icons.mjs` with the development dependencies and Playwright Chromium installed.
+
 ### GitHub Pages
 
 1. Push the updated project to your GitHub repository, including `isolation.js`, `isolation-sw.js`, and `.nojekyll`.

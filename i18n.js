@@ -1,4 +1,10 @@
 export const translations = {
+  'Fullscreen': 'Fullskjerm',
+  'Exit fullscreen': 'Avslutt fullskjerm',
+  'Install app': 'Installer app',
+  'Could not enter fullscreen. Check your browser permissions.': 'Kunne ikke åpne fullskjerm. Sjekk tillatelsene i nettleseren.',
+  'To install, use the install icon in the address bar or the Apps menu in Edge or Chrome. If it is not available yet, wait for Python to load and try again.': 'Bruk installasjonsikonet i adressefeltet eller appmenyen i Edge eller Chrome. Hvis valget ikke vises ennå, vent til Python er klart og prøv igjen.',
+  'Installation could not start. Try the install option in your browser menu.': 'Kunne ikke starte installasjonen. Prøv installasjonsvalget i nettlesermenyen.',
   'Code': 'Kode',
   'Workspace': 'Arbeidsområde',
   'Interpreter (>>>)': 'Interaktiv Python (>>>)',

@@ -19,6 +19,14 @@ test('tabs and interactive Python preserve state, handle blocks, input, errors a
     await expect(prompt).toHaveText(next);
   }
   await command('x = 40');
+  await input.fill('x + 2');
+  await page.locator('#code-tab').click();
+  await page.locator('#terminal-tab').click();
+  await expect(input).toBeFocused();
+  await expect(input).toHaveValue('x + 2');
+  await page.keyboard.press('Enter');
+  await expect(output).toContainText('\n42\n');
+  await expect(input).toBeFocused();
   await command('x + 2');
   await expect(output).toContainText('\n42\n');
   await command('for i in range(2):', '...');
@@ -32,6 +40,9 @@ test('tabs and interactive Python preserve state, handle blocks, input, errors a
   await input.fill('name = input("Name: ")');
   await input.press('Enter');
   await expect(prompt).toHaveText('›');
+  await page.locator('#code-tab').click();
+  await page.locator('#terminal-tab').click();
+  await expect(input).toBeFocused();
   await input.fill('Bjørn');
   await input.press('Enter');
   await expect(prompt).toHaveText('>>>');
