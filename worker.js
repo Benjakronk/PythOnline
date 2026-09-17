@@ -1,6 +1,7 @@
 // Keep synchronous Python input off the UI thread.
 const PYODIDE_URL = 'https://cdn.jsdelivr.net/pyodide/v0.27.7/full/';
 let python;
+let interpreter;
 let control;
 let bytes;
 let pending = '';
@@ -43,14 +44,34 @@ self.onmessage = async ({ data }) => {
         },
         isatty: true,
       });
+      interpreter = python.runPython('from code import InteractiveConsole\nInteractiveConsole()');
       postMessage({ type: 'ready' });
     } catch (error) { postMessage({ type: 'error', text: String(error) }); }
     return;
   }
-  if (data.type !== 'run' || !python) return;
+  if (!python) return;
+  if (data.type === 'reset-buffer') {
+    interpreter.resetbuffer();
+    postMessage({ type: 'repl-done', more: false });
+    return;
+  }
+  if (!['run', 'repl'].includes(data.type)) return;
   emitted = 0;
   outputLimitMessage = data.outputLimitMessage;
   pending = '';
+  if (data.type === 'repl') {
+    let more = false;
+    let exited = false;
+    try { more = interpreter.push(data.code); }
+    catch (error) {
+      if (error.type === 'SystemExit') exited = true;
+      else postMessage({ type: 'output', text: `${error.message}\n` });
+      interpreter.resetbuffer();
+    }
+    flush();
+    postMessage({ type: 'repl-done', more, exited });
+    return;
+  }
   let globals;
   let ok = true;
   try {

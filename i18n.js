@@ -1,4 +1,7 @@
 export const translations = {
+  'Code': 'Kode',
+  'Workspace': 'Arbeidsområde',
+  'Interpreter (>>>)': 'Interaktiv Python (>>>)',
   'Downloading Python…': 'Laster ned Python…',
   'Preparing the terminal…': 'Klargjør terminalen…',
   'Preparing Python. Run code becomes available when loading finishes.': 'Klargjør Python. Kjør kode blir tilgjengelig når innlastingen er ferdig.',

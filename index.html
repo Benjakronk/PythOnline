@@ -1,40 +1,17 @@
 <!doctype html>
-<html lang="nb">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#172b28">
-  <title data-i18n="PythOnline · Your Python workspace">PythOnline · Ditt Python-verksted</title>
-  <link rel="stylesheet" href="style.css">
-  <script type="module" src="app.js?v=2"></script>
-</head>
-<body>
-  <header class="topbar">
-    <a class="brand" href="./"><span class="brand-icon">&gt;_</span> PythOnline<span class="badge" data-i18n="CLASSROOM">KLASSEROM</span></a>
-    <div class="header-tools"><label class="language-picker"><span data-i18n="Language">Språk</span><select id="language"><option value="nb">Norsk</option><option value="en">English</option></select></label><span class="local-note"><span class="dot"></span> <span data-i18n="Runs in your browser">Kjører i nettleseren</span></span></div>
-  </header>
-  <main>
-    <section class="intro">
-      <div><p class="eyebrow" data-i18n="A LITTLE CODE. ENDLESS POSSIBILITIES.">LITT KODE. UENDELIGE MULIGHETER.</p><h1 data-i18n="Your next idea starts here.">Din neste idé starter her.</h1><p data-i18n="Write Python, open a file, and see what happens. No installation needed.">Skriv Python, åpne en fil og se hva som skjer. Ingen installasjon nødvendig.</p></div>
-      <button id="example" class="button subtle" data-i18n="↻ Load example">↻ Last inn eksempel</button>
-    </section>
-    <div class="workspace">
-      <section class="panel editor-panel" aria-labelledby="editor-heading">
-        <div class="panel-heading"><div><span class="step">01</span><h2 id="editor-heading" data-i18n="Your code">Koden din</h2></div><div class="actions"><button id="open" class="button small" data-i18n="↑ Open .py">↑ Åpne .py</button><button id="save" class="button small" data-i18n="↓ Save">↓ Lagre</button></div></div>
-        <div class="filebar"><span class="python-icon">Py</span><span id="filename">hello.py</span><span class="file-hint">Python</span></div>
-        <div class="editor-wrap"><div id="line-numbers" aria-hidden="true">1</div><textarea id="editor" aria-label="Python-kode" data-i18n-aria-label="Python code" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off"></textarea></div>
-        <div class="editor-footer"><span id="line-count">1 linje</span><span>UTF-8 <span class="divider">/</span> <kbd>Ctrl</kbd> + <kbd>Enter</kbd> <span data-i18n="to run">for å kjøre</span></span></div>
-      </section>
-      <section class="panel terminal-panel" aria-labelledby="terminal-heading">
-        <div class="panel-heading"><div><span class="step">02</span><h2 id="terminal-heading">Terminal</h2></div><button id="clear" class="button small terminal-clear" data-i18n="Clear">Tøm</button></div>
-        <div class="terminal-body" id="terminal-body"><pre id="output" role="log" aria-label="Utdata fra Python" data-i18n-aria-label="Python output" aria-live="polite"></pre><form id="input-form" hidden><label for="terminal-input">›</label><input id="terminal-input" autocomplete="off" aria-label="Svar til programmet" data-i18n-aria-label="Program input" placeholder="Skriv svaret ditt og trykk Enter" data-i18n-placeholder="Type your answer and press Enter"><button type="submit" data-i18n="Send ↵">Send ↵</button></form></div>
-        <div class="terminal-footer"><span id="status" role="status" data-i18n="Loading Python…">Laster Python…</span><span>Python / Pyodide</span></div>
-      </section>
-    </div>
-    <div class="runbar"><p id="hint" data-i18n="Getting your workspace ready. The first load can take a moment.">Gjør klart arbeidsområdet ditt. Første innlasting kan ta litt tid.</p><div class="actions"><button id="retry" class="button" hidden data-i18n="Retry loading">Prøv igjen</button><button id="stop" class="button" disabled data-i18n="■ Stop">■ Stopp</button><button id="run" class="button primary" disabled data-i18n="▶ Run code">▶ Kjør kode</button></div></div>
-    <section class="tips" aria-label="Hurtigveiledning" data-i18n-aria-label="Quick guide"><article><span>↗</span><div><h3 data-i18n="Bring your own code">Ta med din egen kode</h3><p data-i18n="Open a .py file or drop one into the editor.">Åpne en .py-fil eller dra den inn i kodefeltet.</p></div></article><article><span>⌨</span><div><h3 data-i18n="A conversation with your code">En samtale med koden din</h3><p data-i18n="When your program asks a question, answer in the terminal.">Når programmet stiller et spørsmål, svarer du i terminalen.</p></div></article><article><span>✓</span><div><h3 data-i18n="Make yourself at home">Ta vare på arbeidet ditt</h3><p data-i18n="Your code is saved in this browser. Download a copy to keep.">Koden lagres i denne nettleseren. Last ned en kopi for å ta vare på den.</p></div></article></section>
-    <footer><span data-i18n="Made for learning, one line at a time.">Laget for læring, én linje om gangen.</span><span data-i18n="Python, minus the setup.">Python, uten oppsettet.</span></footer>
-  </main>
-  <input id="file-input" type="file" accept=".py,text/x-python" hidden>
-</body>
-</html>
+<html lang="nb"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PythOnline</title><link rel="stylesheet" href="style.css?v=3"><script type="module" src="app.js?v=3"></script>
+</head><body>
+<header class="topbar">
+  <a class="brand" href="./">&gt;_ PythOnline</a>
+  <div class="actions"><button id="open" data-i18n="↑ Open .py">↑ Åpne .py</button><button id="save" data-i18n="↓ Save">↓ Lagre</button><button id="run" class="primary" disabled data-i18n="▶ Run code">▶ Kjør kode</button><button id="stop" disabled data-i18n="■ Stop">■ Stopp</button></div>
+  <label class="language-picker"><span data-i18n="Language">Språk</span><select id="language"><option value="nb">Norsk</option><option value="en">English</option></select></label>
+</header>
+<main>
+  <div class="workspace-bar"><div role="tablist" aria-label="Arbeidsområde" data-i18n-aria-label="Workspace"><button id="code-tab" role="tab" aria-selected="true" aria-controls="code-panel" data-i18n="Code">Kode</button><button id="terminal-tab" role="tab" aria-selected="false" aria-controls="terminal-panel" tabindex="-1">Terminal</button></div><span id="status" role="status">Laster Python…</span><button id="retry" hidden data-i18n="Retry loading">Prøv igjen</button></div>
+  <p id="hint" role="status" hidden></p>
+  <section id="code-panel" role="tabpanel" aria-labelledby="code-tab"><div class="filebar"><span id="filename">hello.py</span><span id="line-count"></span></div><div class="editor-wrap"><div id="line-numbers" aria-hidden="true"></div><textarea id="editor" aria-label="Python-kode" data-i18n-aria-label="Python code" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off"></textarea></div></section>
+  <section id="terminal-panel" role="tabpanel" aria-labelledby="terminal-tab" hidden><div class="terminal-tools"><label><input id="interpreter" type="checkbox"> <span data-i18n="Interpreter (>>>)">Interaktiv Python (&gt;&gt;&gt;)</span></label><button id="clear" data-i18n="Clear">Tøm</button></div><div id="terminal-body"><pre id="output" role="log" aria-label="Utdata fra Python" data-i18n-aria-label="Python output" aria-live="polite"></pre><form id="input-form" hidden><label id="prompt" for="terminal-input">›</label><input id="terminal-input" autocomplete="off" spellcheck="false" autocapitalize="off" aria-label="Svar til programmet" data-i18n-aria-label="Program input"><button type="submit" data-i18n="Send ↵">Send ↵</button></form></div></section>
+</main><input id="file-input" type="file" accept=".py,text/x-python" hidden>
+</body></html>

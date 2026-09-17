@@ -39,7 +39,9 @@ These headers enable the shared memory used for interactive terminal input. When
 
 ## Scope
 
-- Designed for standard-library exercises, loops, functions, and terminal input/output. This is a program terminal, not a PowerShell shell or an interactive Python REPL.
+- The Code and Terminal tabs each fill the workspace. Run/Stop, file loading, saving, and language selection are in the header. Running a script automatically opens Terminal.
+- Enable **Interaktiv Python (>>>) / Interpreter (>>>)** in Terminal to use an interactive Python session. Expressions display results, variables persist between commands, and incomplete blocks show `...`; submit an empty line to finish a block. Up/Down recall command history. Ctrl+C cancels an unfinished block; Stop terminates running code and resets Python. `exit()` leaves interactive mode.
+- Scripts and the interpreter have separate namespaces. Switching tabs or running a script preserves interpreter variables; Stop or page reload resets them. This is Python, not a PowerShell shell. Standard-library exercises, loops, functions, and terminal input/output are supported.
 - Desktop GUI libraries (such as tkinter), subprocesses, and arbitrary native Python packages are not supported. Additional third-party packages are not automatically installed.
 - Programs use a virtual filesystem, without direct access to the student's disk. Open loads one script into the editor; it does not upload a whole project or accompanying data files.
 - Stop terminates the worker and reloads Python, including when code is waiting for input or running an infinite loop. New runs have fresh script variables, but imported module state and virtual files may persist until Stop/reload.

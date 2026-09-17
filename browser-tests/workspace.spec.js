@@ -21,6 +21,7 @@ test(`${language}: run, input, file loading, download, autosave, errors, and sto
   await expect(output).toContainText(language === 'nb' ? 'Hei, Bjørn 👋!' : 'Hello, Bjørn 👋!');
   await expect(page.locator('#status')).toHaveText(language === 'nb' ? 'Ferdig' : 'Finished');
   await expect(run).toBeEnabled();
+  await page.locator('#code-tab').click();
   await editor.fill('first = input("First: ")\nsecond = input("Second: ")\nprint(repr(first), second)');
   await run.click();
   await expect(input).toBeVisible();
@@ -51,11 +52,13 @@ test(`${language}: run, input, file loading, download, autosave, errors, and sto
   await run.click();
   await expect(output).toContainText('ZeroDivisionError');
   await expect(run).toBeEnabled();
+  await page.locator('#code-tab').click();
   await editor.fill('while True:\n    pass');
   await run.click();
   await page.locator('#stop').click();
   await expect(output).toContainText(language === 'nb' ? 'Programmet er stoppet' : 'Program stopped');
   await expect(run).toBeEnabled({ timeout: 90000 });
+  await page.locator('#code-tab').click();
   await editor.fill('print("Recovered")');
   await run.click();
   await expect(output).toContainText('Recovered');

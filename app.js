@@ -1,4 +1,4 @@
-import { t, language, setLanguage, examples } from './i18n.js?v=2';
+import { t, language, setLanguage, examples } from './i18n.js?v=3';
 import { preparePython } from './isolation.js?v=2';
 const $ = (id) => document.getElementById(id);
 const example = examples[language];
@@ -12,10 +12,43 @@ let slowLoadTimer;
 let statusKey = 'Loading Python…';
 let hintKey = 'Getting your workspace ready. The first load can take a moment.';
 let hintValues = {};
+let more = false;
+const history = [];
+let historyIndex = 0;
+let historyDraft = '';
+function selectTab(name, focus = false) {
+  for (const tab of ['code', 'terminal']) {
+    const selected = name === tab;
+    $(`${tab}-tab`).setAttribute('aria-selected', String(selected));
+    $(`${tab}-tab`).tabIndex = selected ? 0 : -1;
+    $(`${tab}-panel`).hidden = !selected;
+  }
+  if (focus) $(`${name}-tab`).focus();
+}
+for (const tab of ['code', 'terminal']) {
+  $(`${tab}-tab`).onclick = () => selectTab(tab);
+  $(`${tab}-tab`).onkeydown = (event) => {
+    if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
+      event.preventDefault();
+      selectTab(event.key === 'Home' ? 'code' : event.key === 'End' ? 'terminal' : tab === 'code' ? 'terminal' : 'code', true);
+    }
+  };
+}
+function updatePrompt() {
+  $('input-form').hidden = state !== 'input' && !(state === 'ready' && $('interpreter').checked);
+  $('prompt').textContent = state === 'input' ? '›' : more ? '...' : '>>>';
+  $('interpreter').disabled = ['running', 'input'].includes(state);
+}
+$('interpreter').onchange = () => {
+  updatePrompt();
+  if ($('interpreter').checked) $('terminal-input').focus();
+};
 function setHint(key, values = {}) {
   hintKey = key;
   hintValues = values;
   $('hint').textContent = t(key, values);
+  // Keep ordinary success/loading messages out of the workspace.
+  $('hint').hidden = !key || ['All set.', 'Preparing Python.', 'Opened '].some(prefix => key.startsWith(prefix));
 }
 try {
   const saved = JSON.parse(localStorage.getItem('pythonline-draft'));
@@ -43,7 +76,7 @@ function setState(next, label) {
   $('run').textContent = t(next === 'loading' ? 'Loading Python…' : '▶ Run code');
   $('stop').disabled = !['running', 'input'].includes(next);
   $('retry').hidden = next !== 'error';
-  $('input-form').hidden = next !== 'input';
+  updatePrompt();
 }
 function fail(message) {
   clearTimeout(timer);
@@ -58,6 +91,7 @@ async function startWorker() {
   clearTimeout(timer);
   clearTimeout(slowLoadTimer);
   setState('loading', 'Loading Python…');
+  more = false;
   setHint('Preparing Python. Run code becomes available when loading finishes.');
   slowLoadTimer = setTimeout(() => {
     if (state === 'loading') setHint('Python is still loading. The first visit can take up to 90 seconds. Keep this tab open.');
@@ -70,7 +104,7 @@ async function startWorker() {
   }
   try {
     shared = new SharedArrayBuffer(65544);
-    worker = new Worker('worker.js?v=2');
+    worker = new Worker('worker.js?v=3');
   } catch {
     fail('The Python worker could not load. Check your connection or hosting configuration.');
     return;
@@ -88,6 +122,7 @@ async function startWorker() {
       $('status').textContent = t(statusKey);
     } else if (data.type === 'output') append(data.text);
     else if (data.type === 'input') {
+      selectTab('terminal');
       setState('input', 'Waiting for your answer');
       $('terminal-input').value = '';
       $('terminal-input').focus();
@@ -95,12 +130,20 @@ async function startWorker() {
     } else if (data.type === 'done') {
       setState('ready', data.ok ? 'Finished' : 'Check your code');
       append(t(data.ok ? '\n✓ Program finished.\n' : '\nFix the error above and try again.\n'));
+    } else if (data.type === 'repl-done') {
+      more = data.more;
+      if (data.exited) $('interpreter').checked = false;
+      $('terminal-input').value = '';
+      setState('ready', 'Ready');
+      if ($('interpreter').checked) $('terminal-input').focus();
     } else if (data.type === 'error') fail(data.text);
   };
   worker.postMessage({ type: 'init', shared });
 }
 function run() {
   if (state !== 'ready') return;
+  selectTab('terminal');
+  setHint('');
   $('output').textContent = `› python ${filename}\n\n`;
   setState('running', 'Running…');
   worker.postMessage({ type: 'run', code: editor.value, filename, outputLimitMessage: t('\n[Output limit reached. Use Stop if your program keeps running.]\n') });
@@ -114,6 +157,17 @@ $('retry').onclick = startWorker;
 $('clear').onclick = () => { $('output').textContent = ''; };
 $('input-form').onsubmit = (event) => {
   event.preventDefault();
+  if (state === 'ready' && $('interpreter').checked) {
+    const code = $('terminal-input').value;
+    append(`${more ? '...' : '>>>'} ${code}\n`);
+    if (code.trim()) history.push(code);
+    historyIndex = history.length;
+    historyDraft = '';
+    $('terminal-input').value = '';
+    setState('running', 'Running…');
+    worker.postMessage({ type: 'repl', code, outputLimitMessage: t('\n[Output limit reached. Use Stop if your program keeps running.]\n') });
+    return;
+  }
   if (state !== 'input') return;
   const text = $('terminal-input').value;
   const bytes = new TextEncoder().encode(text);
@@ -126,6 +180,29 @@ $('input-form').onsubmit = (event) => {
   Atomics.store(control, 0, 1);
   Atomics.notify(control, 0);
 };
+$('terminal-input').addEventListener('keydown', (event) => {
+  if (event.ctrlKey && event.key.toLowerCase() === 'c' && !window.getSelection().toString()) {
+    event.preventDefault();
+    if (state === 'input') $('stop').click();
+    else if (state === 'ready' && $('interpreter').checked) {
+      append(`${more ? '...' : '>>>'} ${$('terminal-input').value}\nKeyboardInterrupt\n`);
+      setState('running', 'Running…');
+      worker.postMessage({ type: 'reset-buffer' });
+    }
+  }
+  if (state !== 'ready' || !$('interpreter').checked) return;
+  if (event.key === 'Tab') {
+    event.preventDefault();
+    const input = event.target;
+    input.setRangeText('    ', input.selectionStart, input.selectionEnd, 'end');
+  }
+  if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+    event.preventDefault();
+    if (historyIndex === history.length) historyDraft = event.target.value;
+    historyIndex = Math.max(0, Math.min(history.length, historyIndex + (event.key === 'ArrowUp' ? -1 : 1)));
+    event.target.value = historyIndex === history.length ? historyDraft : history[historyIndex];
+  }
+});
 editor.addEventListener('input', updateEditor);
 editor.addEventListener('scroll', () => { $('line-numbers').scrollTop = editor.scrollTop; });
 editor.addEventListener('keydown', (event) => {
@@ -149,6 +226,7 @@ async function openFile(file) {
     editor.value = code.replace(/^\uFEFF/, '');
     filename = file.name;
     updateEditor();
+    selectTab('code');
     setHint('Opened {filename}. Ready to explore.', { filename });
   } catch { setHint('Could not read that file. Please try again.'); }
 }
@@ -165,12 +243,6 @@ $('save').onclick = () => {
   link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 };
-$('example').onclick = () => {
-  if (!Object.values(examples).includes(editor.value) && editor.value.trim() && !confirm(t('Replace your code with the example? Save a copy first if you want to keep it.'))) return;
-  editor.value = examples[language];
-  filename = 'hello.py';
-  updateEditor();
-};
 $('language').addEventListener('change', (event) => {
   const wasExample = Object.values(examples).includes(editor.value);
   setLanguage(event.target.value);
@@ -181,5 +253,4 @@ $('language').addEventListener('change', (event) => {
 });
 setLanguage(language);
 updateEditor();
-append(t('Welcome to your Python terminal.\nYour program’s output will appear here.\n'));
 startWorker();
